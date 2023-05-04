@@ -1,6 +1,6 @@
 # Few-Shot Compound Activity Prediction (FS-CAP)
 
-This repository contains code for the few-shot compound activity prediction (FS-CAP) algorithm (see our paper at ). Unfortunately, no pretrained models could be provided due to upload size constraints.
+This repository contains code for the few-shot compound activity prediction (FS-CAP) algorithm (see our paper at ).
 
 ## Requirements
 [RDKit](https://www.rdkit.org/docs/Install.html) is required, and [OpenBabel](https://openbabel.org/docs/dev/Installation/install.html) if one wishes to download PubChemBA. All code was tested in Python 3.10. The following pip packages are also required:
