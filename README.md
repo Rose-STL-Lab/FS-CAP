@@ -3,7 +3,7 @@
 This repository contains code for the few-shot compound activity prediction (FS-CAP) algorithm. 
 
 ## Docker instructions
-First run `sudo docker build -t fscap .` to build the container, then run `sudo docker run fscap` along with any command line arguments. For example, `sudo docker run fscap --context_smiles "<smiles>" --context_activities <activities> --query_smiles "<smiles>"`.
+First add a trained model file to the same folder as the `Dockerfile` (or use the one provided [here](https://drive.google.com/file/d/1SD8H5j6U7gyZOI_oncZrEzDBrz-z7-Ng/view?usp=sharing)), then run `sudo docker build -t fscap .` to build the container, then run `sudo docker run fscap` along with any command line arguments. For example, `sudo docker run fscap --context_smiles "<smiles>" --context_activities <activities> --query_smiles "<smiles>"`.
 
 ## Requirements
 [RDKit](https://www.rdkit.org/docs/Install.html) is required, and [OpenBabel](https://openbabel.org/docs/dev/Installation/install.html) if one wishes to download PubChemBA. All code was tested in Python 3.10. The following pip packages are also required:
