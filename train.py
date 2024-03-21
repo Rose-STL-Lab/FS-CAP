@@ -7,7 +7,7 @@ from data import *
 from torch.utils.tensorboard import SummaryWriter
 
 
-context_num = 1
+context_num = 8
 
 
 config = {
