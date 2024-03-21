@@ -13,8 +13,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class FSCAP:
     def __init__(self, model_file):
-        self.context_encoder = Encoder(2048, config).to(device)
-        self.query_encoder = Encoder(2048, config).to(device)
+        self.context_encoder = MLPEncoder(2048, config).to(device)
+        self.query_encoder = MLPEncoder(2048, config).to(device)
         self.predictor = Predictor(config['encoding_dim'] * 2, config).to(device)
         context_encoder_dict, query_encoder_dict, predictor_dict = torch.load(model_file, map_location=device)
         self.context_encoder.load_state_dict(context_encoder_dict)

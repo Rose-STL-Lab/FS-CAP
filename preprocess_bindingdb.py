@@ -7,7 +7,6 @@ from rdkit.Chem import MolFromSmiles, MolToSmiles
 from sklearn.model_selection import train_test_split
 import collections
 from rdkit.Chem.AllChem import GetMorganFingerprintAsBitVect
-import sys
 
 
 def featurize_mol(smiles):
@@ -15,24 +14,38 @@ def featurize_mol(smiles):
 
 
 mols = []
-f = open(sys.argv[1], 'r')
+f = open('BindingDB_All.tsv', 'r')
 next(f)
-assays = []
+seqs = []
 for i, row in tqdm(enumerate(csv.reader(f, delimiter='	'))):
-    if (row[8] or row[9] or row[10] or row[11]) and (10 <= len([char for char in row[1] if char not in '()=@[]123456789']) <= 70) and row[37] != 'NULL' and MolFromSmiles(row[1]):
+    # 8 or 10 for ki/kd, 9 or 11 for ic50/ec50
+    if (row[8] or row[9] or row[10] or row[11]) and (10 < len([char for char in row[1] if char not in '()=@[]123456789']) < 70) and row[37] != 'NULL' and MolFromSmiles(row[1]):
         val = (row[10] if row[10] else (row[8] if row[8] else (row[9] if row[9] else row[11]))).replace('<', '').replace('>', '').strip()
-        assays.append(row[37].upper())
+        seqs.append(row[37].upper())
         mols.append((MolToSmiles(MolFromSmiles(row[1])), math.log10(float(val) + 1e-10)))
-allowed_assays = [assay for assay, count in collections.Counter(assays).most_common() if count >= 10]
 
-training_assays, testing_assays = train_test_split(allowed_assays, test_size=100)
-training_assays = set(training_assays)
-testing_assays = set(testing_assays)
-train_mols, train_assays = zip(*[(mols[i], assays[i]) for i in range(len(mols)) if assays[i] in training_assays])
-test_mols, test_assays = zip(*[(mols[i], assays[i]) for i in range(len(mols)) if assays[i] in testing_assays])
+allowed_seqs = [seq for seq, count in collections.Counter(seqs).most_common() if count > 10]
+
+for seq in tqdm(allowed_seqs):
+    vals = [mols[i][1] for i in range(len(mols)) if seqs[i] == seq]
+    if not (True in [4 < val < 50 for val in vals]):
+        i = 0
+        while i < len(mols):
+            if seqs[i] == seq:
+                del mols[i]
+                del seqs[i]
+            else:
+                i += 1
+allowed_seqs = [seq for seq, count in collections.Counter(seqs).most_common() if count > 10]
+
+training_seqs, testing_seqs = train_test_split(allowed_seqs, test_size=100)
+training_seqs = set(training_seqs)
+testing_seqs = set(testing_seqs)
+train_mols, train_seqs = zip(*[(mols[i], seqs[i]) for i in range(len(mols)) if seqs[i] in training_seqs])
+test_mols, test_seqs = zip(*[(mols[i], seqs[i]) for i in range(len(mols)) if seqs[i] in testing_seqs])
+y_train = np.array([binding for _, binding in train_mols])
+y_test = np.array([binding for _, binding in test_mols])
 
 x_train = np.array([featurize_mol(smiles) for smiles, _ in train_mols], dtype=bool)
 x_test = np.array([featurize_mol(smiles) for smiles, _ in test_mols], dtype=bool)
-y_train = np.array([binding for _, binding in train_mols])
-y_test = np.array([binding for _, binding in test_mols])
-pickle.dump((x_train, x_test, y_train, y_test, train_assays, test_assays), open('bindingdb_data.pickle', 'wb')) 
+pickle.dump((x_train, x_test, y_train, y_test, train_seqs, test_seqs), open('bindingdb_data.pickle', 'wb'))
